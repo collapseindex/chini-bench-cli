@@ -1,0 +1,5 @@
+questionary>=2.0
+requests>=2.31
+# Optional, install as needed:
+# openai>=1.40
+# anthropic>=0.30

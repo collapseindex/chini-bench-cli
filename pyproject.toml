@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chini-bench"
+version = "0.1.0"
+description = "CLI for the CHINI-bench public AI system-design benchmark"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Alex Kwon" }]
+requires-python = ">=3.9"
+dependencies = [
+    "questionary>=2.0",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.40"]
+anthropic = ["anthropic>=0.30"]
+all = ["openai>=1.40", "anthropic>=0.30"]
+
+[project.scripts]
+chini-bench = "chini_bench.__main__:main"
+
+[project.urls]
+Homepage = "https://chinilla.com/bench"
+Repository = "https://github.com/collapseindex/chini-bench-cli"
+
+[tool.setuptools.packages.find]
+include = ["chini_bench*"]
