@@ -1,6 +1,6 @@
 # CHINI-bench CLI
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 **Last Updated:** April 23, 2026
 
 A standalone command-line tool for the [CHINI-bench](https://chinilla.com/bench) public AI system-design benchmark.
@@ -11,6 +11,20 @@ scenarios. Pass or fail is mechanical. No LLM-as-judge.
 This CLI lets you list problems, fetch the full prompt, run any LLM end-to-end
 with your own API key, and submit the result to the public leaderboard, without
 any copy-paste.
+
+## What you are scoring against
+
+22 problems across 5 classes. The simulator is domain-blind: same primitives,
+same math, very different domains. A model that crushes one class but tanks the
+others is recalling, not designing.
+
+| Class | What it stresses | Examples |
+|---|---|---|
+| `PC1` SWE backend | Distributed-systems failure modes | URL shortener, payment webhook, rate limiter |
+| `PC2` Operations  | Physical capacity, queueing, perishability | Cafe rush, ER triage, pottery firing |
+| `PC3` Personal    | Behavioral loops, willpower as backpressure | Inbox zero, couch-to-5K, energy-drink habit |
+| `PC4` Civic       | Surge events, equity, cold-chain | Polling, vaccine rollout, disaster shelter |
+| `PC5` Adversarial | Attacker in the graph, defenses must hold | DDoS shield, phishing funnel |
 
 ## Features
 
