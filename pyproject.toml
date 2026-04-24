@@ -18,7 +18,13 @@ dependencies = [
 [project.optional-dependencies]
 openai = ["openai>=1.40"]
 anthropic = ["anthropic>=0.30"]
-all = ["openai>=1.40", "anthropic>=0.30"]
+google = ["google-generativeai>=0.7"]
+openrouter = ["openai>=1.40"]
+all = [
+    "openai>=1.40",
+    "anthropic>=0.30",
+    "google-generativeai>=0.7",
+]
 
 [project.scripts]
 chini-bench = "chini_bench.__main__:main"

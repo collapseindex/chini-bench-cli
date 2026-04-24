@@ -86,7 +86,20 @@ Run `chini-bench <command> --help` for full options.
 | `CHINI_BENCH_URL` | Bench server base URL | `https://chinilla.com` |
 | `OPENAI_API_KEY` | For `--provider openai` | none |
 | `ANTHROPIC_API_KEY` | For `--provider anthropic` | none |
-| `OLLAMA_HOST` | For `--provider ollama` | `http://localhost:11434` |
+| `GOOGLE_API_KEY` (or `GEMINI_API_KEY`) | For `--provider google` | none |
+| `OPENROUTER_API_KEY` | For `--provider openrouter` | none |
+| `OPENROUTER_REFERER` / `OPENROUTER_TITLE` | Optional attribution headers | `https://chinilla.com/bench` / `chini-bench` |
+| `OLLAMA_HOST` | For `--provider ollama` (local models) | `http://localhost:11434` |
+
+Install extras for the providers you actually use:
+
+```bash
+pip install "chini-bench[openai]"
+pip install "chini-bench[anthropic]"
+pip install "chini-bench[google]"
+pip install "chini-bench[openrouter]"   # uses the openai SDK under the hood
+pip install "chini-bench[all]"          # everything except ollama (ollama needs no SDK)
+```
 
 ## Privacy & Control
 
@@ -96,6 +109,36 @@ Run `chini-bench <command> --help` for full options.
   your chosen submitter name).
 - **No telemetry, no tracking, no account.** Everything runs locally.
 - **Submissions show as `community:<your-name>`** on the public leaderboard.
+
+## Security
+
+The CLI is intentionally minimal. The full attack surface is: read env vars, call one model provider over HTTPS, POST a JSON canvas to the bench server.
+
+Automated checks run against this repo:
+
+| Tool | Scope | Status (v0.1.0, 2026-04-23) |
+|---|---|---|
+| `bandit -r chini_bench` | Static security analysis (723 LOC) | 0 issues, all severities |
+| `pip-audit -r requirements.txt` | Known CVEs in declared deps | No known vulnerabilities |
+
+Reproduce locally:
+
+```bash
+pip install bandit pip-audit
+bandit -r chini_bench
+pip-audit -r requirements.txt
+```
+
+Design choices that limit risk:
+
+- **No `subprocess`, `os.system`, `eval`, `exec`, `pickle`, or `shell=True`** anywhere in the package.
+- **No SSL verification disabled.** All `requests` calls use defaults plus an explicit 60s timeout.
+- **API keys are read from environment variables only.** The CLI never writes them to disk, never logs them, and never sends them to anything except the matching provider's official SDK or REST endpoint.
+- **LLM output is parsed as JSON only** (`json.loads`), never `eval`'d.
+- **The bench server validates everything** the CLI sends (submitter regex, model regex, X handle regex, LinkedIn slug regex, canvas schema). The CLI is not a trusted client.
+- **No telemetry.** The only outbound calls are: your chosen provider, and `https://chinilla.com/api/bench/*` when you explicitly run `submit` or `run`.
+
+Found a security issue? Email `squeak@chinilla.com`. Please do not file a public issue first.
 
 ## License
 

@@ -142,7 +142,7 @@ def build_parser() -> argparse.ArgumentParser:
     sr.add_argument(
         "--provider",
         required=True,
-        choices=["openai", "anthropic", "ollama"],
+        choices=["openai", "anthropic", "google", "openrouter", "ollama"],
         help="Which provider to call (key from env)",
     )
     sr.add_argument("--model", required=True, help="Model id, e.g. gpt-4o-mini")

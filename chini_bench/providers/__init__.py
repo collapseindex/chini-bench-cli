@@ -6,8 +6,10 @@ from __future__ import annotations
 from typing import Callable
 
 from chini_bench.providers.anthropic_p import generate as _anthropic
+from chini_bench.providers.google_p import generate as _google
 from chini_bench.providers.ollama import generate as _ollama
 from chini_bench.providers.openai_p import generate as _openai
+from chini_bench.providers.openrouter import generate as _openrouter
 
 GenerateFn = Callable[[str, str, str], dict]
 # Signature: generate(system_prompt, user_prompt, model_id) -> CanvasState dict
@@ -15,6 +17,8 @@ GenerateFn = Callable[[str, str, str], dict]
 PROVIDERS: dict[str, GenerateFn] = {
     "openai": _openai,
     "anthropic": _anthropic,
+    "google": _google,
+    "openrouter": _openrouter,
     "ollama": _ollama,
 }
 
