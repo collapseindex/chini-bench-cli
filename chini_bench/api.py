@@ -46,14 +46,27 @@ def get_problem(problem_id: str) -> dict[str, Any]:
     return r.json().get("problem", {})
 
 
-def submit(problem_id: str, submitter: str, canvas: dict[str, Any]) -> dict[str, Any]:
+def submit(
+    problem_id: str,
+    submitter: str,
+    canvas: dict[str, Any],
+    model: str | None = None,
+    x: str | None = None,
+    linkedin: str | None = None,
+) -> dict[str, Any]:
     """POST /api/bench/submit - send a CanvasState, get a deterministic score."""
-    payload = {
+    payload: dict[str, Any] = {
         "problemId": problem_id,
         "submitter": submitter,
         "canvas": canvas,
         "website": "",  # honeypot must be empty for real users
     }
+    if model:
+        payload["model"] = model
+    if x:
+        payload["x"] = x
+    if linkedin:
+        payload["linkedin"] = linkedin
     r = _session().post(
         f"{base_url()}/api/bench/submit",
         json=payload,

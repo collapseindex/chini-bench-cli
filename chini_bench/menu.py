@@ -102,8 +102,21 @@ def _action_submit() -> None:
     ).ask()
     if not file_path:
         return
+    model = questionary.text(
+        "Model id that produced this (optional, press enter to skip):",
+        default="",
+    ).ask()
+    x = questionary.text("X/Twitter handle, no @ (optional):", default="").ask()
+    linkedin = questionary.text("LinkedIn slug (optional):", default="").ask()
     canvas = json.loads(Path(file_path).read_text(encoding="utf-8"))
-    result = api.submit(pid, submitter, canvas)
+    result = api.submit(
+        pid,
+        submitter,
+        canvas,
+        model=model or None,
+        x=x or None,
+        linkedin=linkedin or None,
+    )
     score_print(result)
 
 
@@ -127,6 +140,8 @@ def _action_run() -> None:
     ).ask()
     if not submitter:
         return
+    x = questionary.text("X/Twitter handle, no @ (optional):", default="").ask()
+    linkedin = questionary.text("LinkedIn slug (optional):", default="").ask()
 
     problem = api.get_problem(pid)
     print(f"Calling {provider}/{model}...")
@@ -137,5 +152,12 @@ def _action_run() -> None:
     print(f"Canvas saved to {saved}")
 
     if questionary.confirm("Submit to bench server?", default=True).ask():
-        result = api.submit(pid, submitter, canvas)
+        result = api.submit(
+            pid,
+            submitter,
+            canvas,
+            model=model,
+            x=x or None,
+            linkedin=linkedin or None,
+        )
         score_print(result)

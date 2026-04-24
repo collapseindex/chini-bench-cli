@@ -45,11 +45,13 @@ Interactive menu (recommended for first time):
 chini-bench
 ```
 
-End-to-end run with your own OpenAI key:
+End-to-end run with your own OpenAI key (and a couple of socials so the leaderboard links back to you):
 
 ```bash
 export OPENAI_API_KEY=sk-...
-chini-bench run chini-001-url-shortener --provider openai --model gpt-4o-mini --as alex
+chini-bench run chini-001-url-shortener \
+  --provider openai --model gpt-4o-mini \
+  --as alex --x alex --linkedin alex-builds
 ```
 
 Just fetch a prompt and pipe it somewhere:
@@ -58,10 +60,11 @@ Just fetch a prompt and pipe it somewhere:
 chini-bench prompt chini-002-checkout > prompt.txt
 ```
 
-Submit a canvas you already have:
+Submit a canvas you already have (model + socials are optional):
 
 ```bash
-chini-bench submit chini-002-checkout --file canvas.json --as alex
+chini-bench submit chini-002-checkout --file canvas.json --as alex \
+  --model gpt-4o-mini --x alex
 ```
 
 ## Commands
@@ -71,8 +74,8 @@ chini-bench submit chini-002-checkout --file canvas.json --as alex
 | `chini-bench` | Launch interactive menu |
 | `chini-bench list` | List all problems with current scores |
 | `chini-bench prompt <id>` | Print the full prompt for a problem |
-| `chini-bench submit <id> --file canvas.json --as <name>` | Submit a CanvasState file |
-| `chini-bench run <id> --provider <p> --model <m> --as <name>` | Generate + submit end-to-end |
+| `chini-bench submit <id> --file canvas.json --as <name> [--model M] [--x H] [--linkedin S]` | Submit a CanvasState file |
+| `chini-bench run <id> --provider <p> --model <m> --as <name> [--x H] [--linkedin S]` | Generate + submit end-to-end |
 
 Run `chini-bench <command> --help` for full options.
 
