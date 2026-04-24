@@ -1,7 +1,8 @@
 # CHINI-bench CLI
 
-**Version:** 0.2.0
+**Version:** 0.4.0
 **Last Updated:** April 23, 2026
+**Author:** Alex Kwon ([chinilla.com](https://chinilla.com))
 
 A standalone command-line tool for the [CHINI-bench](https://chinilla.com/bench) public AI system-design benchmark.
 
@@ -130,7 +131,7 @@ The CLI is intentionally minimal. The full attack surface is: read env vars, cal
 
 Automated checks run against this repo:
 
-| Tool | Scope | Status (v0.1.0, 2026-04-23) |
+| Tool | Scope | Status (v0.4.0, 2026-04-23) |
 |---|---|---|
 | `bandit -r chini_bench` | Static security analysis (723 LOC) | 0 issues, all severities |
 | `pip-audit -r requirements.txt` | Known CVEs in declared deps | No known vulnerabilities |
@@ -162,7 +163,29 @@ other noncommercial use. See [LICENSE](LICENSE).
 Commercial use (integration into a paid product, commercial eval pipeline,
 etc.) requires a separate license. Email squeak@chinilla.com.
 
+## Citation
+
+If you use CHINI-bench CLI in academic or industry work, please cite it as:
+
+```
+@misc{chinibenchcli2026,
+  title  = {{CHINI-bench CLI}: A standalone runner for the {CHINI-bench} {AI} system-design benchmark},
+  author = {Kwon, Alex},
+  year   = {2026},
+  note   = {Version 0.4.0. https://chinilla.com/bench},
+  url    = {https://github.com/collapseindex/chini-bench-cli}
+}
+```
+
+Plain text:
+
+> Kwon, A. (2026). *CHINI-bench CLI: A standalone runner for the CHINI-bench AI system-design benchmark* (Version 0.4.0). ALEX KWON / CHINILLA.COM. https://chinilla.com/bench
+
 ## Changelog
+
+### v0.4.0 (2026-04-23)
+- Added harness verification: every auto-submit now sends `harness=chini-bench-cli:<sha256(SYSTEM_PROMPT)[:12]>` so the leaderboard can mark unmodified runs as `default` and modified runs as `custom`.
+- Canonical hash for this version: `chini-bench-cli:06d0ffb42f19`. Verify with `python -c "from chini_bench.prompt import system_prompt_hash; print(system_prompt_hash())"`.
 
 ### v0.1.0 (2026-04-23)
 - Initial release: list, prompt, submit, run, interactive menu
