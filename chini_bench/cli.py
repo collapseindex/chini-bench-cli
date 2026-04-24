@@ -55,8 +55,6 @@ def cmd_submit(args: argparse.Namespace) -> int:
         args.submitter,
         canvas,
         model=getattr(args, "model", None),
-        x=getattr(args, "x", None),
-        linkedin=getattr(args, "linkedin", None),
     )
     score_print(result)
     return 0 if result.get("passed") else 0  # exit 0 even on a fail score
@@ -86,8 +84,6 @@ def cmd_run(args: argparse.Namespace) -> int:
         args.submitter,
         canvas,
         model=args.model,
-        x=args.x,
-        linkedin=args.linkedin,
         harness=f"chini-bench-cli:{system_prompt_hash()}",
     )
     score_print(result)
@@ -124,16 +120,6 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional: model id that produced this canvas (shown on leaderboard)",
     )
-    ss.add_argument(
-        "--x",
-        default=None,
-        help="Optional: your X/Twitter handle (no @)",
-    )
-    ss.add_argument(
-        "--linkedin",
-        default=None,
-        help="Optional: your LinkedIn vanity slug or full /in/<slug> URL",
-    )
     ss.set_defaults(func=cmd_submit)
 
     sr = sub.add_parser(
@@ -153,16 +139,6 @@ def build_parser() -> argparse.ArgumentParser:
         dest="submitter",
         required=True,
         help="Submitter name (will appear as community:<name>)",
-    )
-    sr.add_argument(
-        "--x",
-        default=None,
-        help="Optional: your X/Twitter handle (no @)",
-    )
-    sr.add_argument(
-        "--linkedin",
-        default=None,
-        help="Optional: your LinkedIn vanity slug or full /in/<slug> URL",
     )
     sr.add_argument(
         "--dry-run",

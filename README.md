@@ -1,7 +1,7 @@
 # CHINI-bench CLI
 
-**Version:** 0.4.0
-**Last Updated:** April 23, 2026
+**Version:** 0.5.0
+**Last Updated:** April 24, 2026
 **Author:** Alex Kwon ([chinilla.com](https://chinilla.com))
 
 A standalone command-line tool for the [CHINI-bench](https://chinilla.com/bench) public AI system-design benchmark.
@@ -60,13 +60,13 @@ Interactive menu (recommended for first time):
 chini-bench
 ```
 
-End-to-end run with your own OpenAI key (and a couple of socials so the leaderboard links back to you):
+End-to-end run with your own OpenAI key:
 
 ```bash
 export OPENAI_API_KEY=sk-...
 chini-bench run chini-001-url-shortener \
   --provider openai --model gpt-4o-mini \
-  --as alex --x alex --linkedin alex-builds
+  --as alex
 ```
 
 Just fetch a prompt and pipe it somewhere:
@@ -75,11 +75,11 @@ Just fetch a prompt and pipe it somewhere:
 chini-bench prompt chini-002-checkout > prompt.txt
 ```
 
-Submit a canvas you already have (model + socials are optional):
+Submit a canvas you already have (model is optional):
 
 ```bash
 chini-bench submit chini-002-checkout --file canvas.json --as alex \
-  --model gpt-4o-mini --x alex
+  --model gpt-4o-mini
 ```
 
 ## Commands
@@ -89,8 +89,8 @@ chini-bench submit chini-002-checkout --file canvas.json --as alex \
 | `chini-bench` | Launch interactive menu |
 | `chini-bench list` | List all problems with current scores |
 | `chini-bench prompt <id>` | Print the full prompt for a problem |
-| `chini-bench submit <id> --file canvas.json --as <name> [--model M] [--x H] [--linkedin S]` | Submit a CanvasState file |
-| `chini-bench run <id> --provider <p> --model <m> --as <name> [--x H] [--linkedin S]` | Generate + submit end-to-end |
+| `chini-bench submit <id> --file canvas.json --as <name> [--model M]` | Submit a CanvasState file |
+| `chini-bench run <id> --provider <p> --model <m> --as <name>` | Generate + submit end-to-end |
 
 Run `chini-bench <command> --help` for full options.
 
@@ -179,9 +179,13 @@ If you use CHINI-bench CLI in academic or industry work, please cite it as:
 
 Plain text:
 
-> Kwon, A. (2026). *CHINI-bench CLI: A standalone runner for the CHINI-bench AI system-design benchmark* (Version 0.4.0). ALEX KWON / CHINILLA.COM. https://chinilla.com/bench
+> Kwon, A. (2026). *CHINI-bench CLI: A standalone runner for the CHINI-bench AI system-design benchmark* (Version 0.5.0). ALEX KWON / CHINILLA.COM. https://chinilla.com/bench
 
 ## Changelog
+
+### v0.5.0 (2026-04-24)
+- Removed `--x` and `--linkedin` flags and their interactive-menu prompts. The leaderboard no longer renders a Links column, so the metadata is no longer collected. Existing runs that already carry these fields in their JSON are unaffected.
+- `SYSTEM_PROMPT` was not modified, so the canonical harness hash carries over: `chini-bench-cli:06d0ffb42f19`.
 
 ### v0.4.0 (2026-04-23)
 - Added harness verification: every auto-submit now sends `harness=chini-bench-cli:<sha256(SYSTEM_PROMPT)[:12]>` so the leaderboard can mark unmodified runs as `default` and modified runs as `custom`.

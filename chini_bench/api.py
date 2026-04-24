@@ -12,7 +12,7 @@ from typing import Any
 import requests
 
 DEFAULT_BASE_URL = "https://chinilla.com"
-USER_AGENT = "chini-bench-cli/0.1.0 (+https://github.com/collapseindex/chini-bench-cli)"
+USER_AGENT = "chini-bench-cli/0.5.0 (+https://github.com/collapseindex/chini-bench-cli)"
 TIMEOUT_SECONDS = 60
 
 
@@ -51,8 +51,6 @@ def submit(
     submitter: str,
     canvas: dict[str, Any],
     model: str | None = None,
-    x: str | None = None,
-    linkedin: str | None = None,
     harness: str | None = None,
 ) -> dict[str, Any]:
     """POST /api/bench/submit - send a CanvasState, get a deterministic score."""
@@ -64,10 +62,6 @@ def submit(
     }
     if model:
         payload["model"] = model
-    if x:
-        payload["x"] = x
-    if linkedin:
-        payload["linkedin"] = linkedin
     if harness:
         payload["harness"] = harness
     r = _session().post(

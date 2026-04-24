@@ -106,16 +106,12 @@ def _action_submit() -> None:
         "Model id that produced this (optional, press enter to skip):",
         default="",
     ).ask()
-    x = questionary.text("X/Twitter handle, no @ (optional):", default="").ask()
-    linkedin = questionary.text("LinkedIn slug (optional):", default="").ask()
     canvas = json.loads(Path(file_path).read_text(encoding="utf-8"))
     result = api.submit(
         pid,
         submitter,
         canvas,
         model=model or None,
-        x=x or None,
-        linkedin=linkedin or None,
     )
     score_print(result)
 
@@ -140,8 +136,6 @@ def _action_run() -> None:
     ).ask()
     if not submitter:
         return
-    x = questionary.text("X/Twitter handle, no @ (optional):", default="").ask()
-    linkedin = questionary.text("LinkedIn slug (optional):", default="").ask()
 
     problem = api.get_problem(pid)
     print(f"Calling {provider}/{model}...")
@@ -157,8 +151,6 @@ def _action_run() -> None:
             submitter,
             canvas,
             model=model,
-            x=x or None,
-            linkedin=linkedin or None,
             harness=f"chini-bench-cli:{system_prompt_hash()}",
         )
         score_print(result)
