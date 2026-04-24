@@ -66,7 +66,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     problem = api.get_problem(args.problem_id)
     generate = get_provider(args.provider)
 
-    from chini_bench.prompt import SYSTEM_PROMPT, build_user_prompt
+    from chini_bench.prompt import SYSTEM_PROMPT, build_user_prompt, system_prompt_hash
 
     print(f"Calling {args.provider}/{args.model}...", file=sys.stderr)
     canvas = generate(SYSTEM_PROMPT, build_user_prompt(problem), args.model)
@@ -80,6 +80,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     print("Submitting to bench server...", file=sys.stderr)
     # Auto-record the model id used so the leaderboard shows it without --model.
+    # `harness` lets the server distinguish unmodified-CLI runs from forks.
     result = api.submit(
         args.problem_id,
         args.submitter,
@@ -87,6 +88,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         model=args.model,
         x=args.x,
         linkedin=args.linkedin,
+        harness=f"chini-bench-cli:{system_prompt_hash()}",
     )
     score_print(result)
     return 0

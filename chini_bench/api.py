@@ -53,6 +53,7 @@ def submit(
     model: str | None = None,
     x: str | None = None,
     linkedin: str | None = None,
+    harness: str | None = None,
 ) -> dict[str, Any]:
     """POST /api/bench/submit - send a CanvasState, get a deterministic score."""
     payload: dict[str, Any] = {
@@ -67,6 +68,8 @@ def submit(
         payload["x"] = x
     if linkedin:
         payload["linkedin"] = linkedin
+    if harness:
+        payload["harness"] = harness
     r = _session().post(
         f"{base_url()}/api/bench/submit",
         json=payload,

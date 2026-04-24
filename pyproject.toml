@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chini-bench"
-version = "0.3.0"
+version = "0.4.0"
 description = "CLI for the CHINI-bench public AI system-design benchmark"
 readme = "README.md"
 license = { file = "LICENSE" }

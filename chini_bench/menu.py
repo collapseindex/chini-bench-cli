@@ -13,7 +13,7 @@ from pathlib import Path
 import questionary
 
 from chini_bench import api
-from chini_bench.prompt import SYSTEM_PROMPT, build_full_prompt, build_user_prompt
+from chini_bench.prompt import SYSTEM_PROMPT, build_full_prompt, build_user_prompt, system_prompt_hash
 from chini_bench.providers import PROVIDERS, get_provider
 from chini_bench.runner import save_run, score_print
 
@@ -159,5 +159,6 @@ def _action_run() -> None:
             model=model,
             x=x or None,
             linkedin=linkedin or None,
+            harness=f"chini-bench-cli:{system_prompt_hash()}",
         )
         score_print(result)

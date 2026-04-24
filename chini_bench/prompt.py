@@ -7,6 +7,7 @@ Keep this file in sync with `src/scripts/benchSubmit.ts` upstream.
 
 from __future__ import annotations
 
+import hashlib
 from typing import Any
 
 SYSTEM_PROMPT = (
@@ -78,3 +79,14 @@ def build_user_prompt(problem: dict[str, Any]) -> str:
 def build_full_prompt(problem: dict[str, Any]) -> str:
     """System + user prompt joined into a single string (for `prompt` command)."""
     return SYSTEM_PROMPT + "\n\n" + build_user_prompt(problem)
+
+
+def system_prompt_hash() -> str:
+    """First 12 hex chars of sha256(SYSTEM_PROMPT).
+
+    Sent with every `run` submission as `harness=chini-bench-cli:<hash>`.
+    Lets the server (and the leaderboard) distinguish unmodified CLI runs
+    from forks that changed the system prompt. Same prompt, same hash,
+    on every machine.
+    """
+    return hashlib.sha256(SYSTEM_PROMPT.encode("utf-8")).hexdigest()[:12]
