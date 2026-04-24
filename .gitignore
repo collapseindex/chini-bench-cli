@@ -17,3 +17,5 @@ data/
 
 reflex_sweep_log.txt
 data/runs/
+
+reflex_sweep_*.log
