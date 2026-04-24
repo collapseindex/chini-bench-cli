@@ -156,7 +156,11 @@ Found a security issue? Email `squeak@chinilla.com`. Please do not file a public
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+PolyForm Noncommercial 1.0.0. Free for personal, research, academic, and any
+other noncommercial use. See [LICENSE](LICENSE).
+
+Commercial use (integration into a paid product, commercial eval pipeline,
+etc.) requires a separate license. Email squeak@chinilla.com.
 
 ## Changelog
 
