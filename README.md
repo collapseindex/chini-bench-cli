@@ -1,6 +1,6 @@
 # CHINI-bench CLI
 
-**Version:** 0.5.0
+**Version:** 0.6.0
 **Last Updated:** April 24, 2026
 **Author:** Alex Kwon ([chinilla.com](https://chinilla.com))
 
@@ -91,6 +91,7 @@ chini-bench submit chini-002-checkout --file canvas.json --as alex \
 | `chini-bench prompt <id>` | Print the full prompt for a problem |
 | `chini-bench submit <id> --file canvas.json --as <name> [--model M]` | Submit a CanvasState file |
 | `chini-bench run <id> --provider <p> --model <m> --as <name>` | Generate + submit end-to-end |
+| `chini-bench reflex run <id> --provider <p> --model <m> --as <name>` | Reflexion track: v1 -> simulator feedback -> v2 -> submit |
 
 Run `chini-bench <command> --help` for full options.
 
@@ -179,9 +180,14 @@ If you use CHINI-bench CLI in academic or industry work, please cite it as:
 
 Plain text:
 
-> Kwon, A. (2026). *CHINI-bench CLI: A standalone runner for the CHINI-bench AI system-design benchmark* (Version 0.5.0). ALEX KWON / CHINILLA.COM. https://chinilla.com/bench
+> Kwon, A. (2026). *CHINI-bench CLI: A standalone runner for the CHINI-bench AI system-design benchmark* (Version 0.6.0). ALEX KWON / CHINILLA.COM. https://chinilla.com/bench
 
 ## Changelog
+
+### v0.6.0 (2026-04-25)
+- New `chini-bench reflex run` subcommand for the Reflexion track. Generates a v1 canvas, calls the new `POST /api/bench/feedback` endpoint to get a redacted simulator FeedbackPacket (no scores, no thresholds), generates a v2 canvas conditioned on that feedback, and submits the v2 canvas with v1 artifacts attached. Tagged with a distinct harness id so the leaderboard splits single-shot and reflex tracks into separate tabs.
+- Canonical reflex harness hash: `chini-bench-reflex:42769353289d`. Verify with `python -c "from chini_bench.prompt import system_prompt_hash_reflex; print(system_prompt_hash_reflex())"`.
+- The single-shot `SYSTEM_PROMPT` is unchanged, so `chini-bench-cli:06d0ffb42f19` carries over.
 
 ### v0.5.0 (2026-04-24)
 - Removed `--x` and `--linkedin` flags and their interactive-menu prompts. The leaderboard no longer renders a Links column, so the metadata is no longer collected. Existing runs that already carry these fields in their JSON are unaffected.

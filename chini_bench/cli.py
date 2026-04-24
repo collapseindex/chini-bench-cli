@@ -90,6 +90,88 @@ def cmd_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _estimate_tokens(*texts: str) -> int:
+    """Crude token count when the provider does not expose a real one.
+
+    Uses the standard "1 token ~= 4 chars of English" heuristic. Documented
+    in the methodology page so reflex-track `tokensTotal` numbers are
+    interpretable across providers that don't return real counts.
+    """
+    return sum(len(t) for t in texts) // 4
+
+
+def cmd_reflex_run(args: argparse.Namespace) -> int:
+    """Reflexion track: v1 generate -> server feedback -> v2 generate -> submit.
+
+    One revision pass. Submits the v2 canvas with v1 artifacts attached as
+    meta so the leaderboard can show v1/v2 deltas and structural fix rate.
+    """
+    problem = api.get_problem(args.problem_id)
+    generate = get_provider(args.provider)
+
+    from chini_bench.prompt import (
+        REFLEX_SYSTEM_PROMPT,
+        build_revision_prompt,
+        build_user_prompt,
+        system_prompt_hash_reflex,
+    )
+
+    user_v1 = build_user_prompt(problem)
+
+    # --- v1 ---
+    print(f"[reflex] v1: calling {args.provider}/{args.model}...", file=sys.stderr)
+    v1_canvas = generate(REFLEX_SYSTEM_PROMPT, user_v1, args.model)
+    v1_path = save_run(
+        f"{args.problem_id}_v1", args.provider, args.model, v1_canvas
+    )
+    print(f"[reflex] v1 canvas saved to {v1_path}", file=sys.stderr)
+
+    # --- feedback ---
+    print("[reflex] requesting FeedbackPacket from simulator...", file=sys.stderr)
+    feedback = api.get_feedback(args.problem_id, v1_canvas)
+    if feedback.get("v1Passed"):
+        print(
+            "[reflex] v1 already passed every scenario; revision will likely be a no-op.",
+            file=sys.stderr,
+        )
+
+    # --- v2 ---
+    user_v2 = build_revision_prompt(feedback)
+    print(f"[reflex] v2: calling {args.provider}/{args.model} for revision...", file=sys.stderr)
+    v2_canvas = generate(REFLEX_SYSTEM_PROMPT, user_v2, args.model)
+    v2_path = save_run(
+        f"{args.problem_id}_v2", args.provider, args.model, v2_canvas
+    )
+    print(f"[reflex] v2 canvas saved to {v2_path}", file=sys.stderr)
+
+    if args.dry_run:
+        print(json.dumps({"v1": v1_canvas, "feedback": feedback, "v2": v2_canvas}, indent=2))
+        return 0
+
+    tokens_total = _estimate_tokens(
+        REFLEX_SYSTEM_PROMPT,
+        user_v1,
+        json.dumps(v1_canvas),
+        user_v2,
+        json.dumps(v2_canvas),
+    )
+
+    print("[reflex] submitting v2 canvas with v1 artifacts...", file=sys.stderr)
+    result = api.submit(
+        args.problem_id,
+        args.submitter,
+        v2_canvas,
+        model=args.model,
+        harness=f"chini-bench-reflex:{system_prompt_hash_reflex()}",
+        v1_canvas=v1_canvas,
+        v1_passed=bool(feedback.get("v1Passed")),
+        feedback=feedback,
+        tokens_total=tokens_total,
+    )
+    score_print(result)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="chini-bench",
@@ -146,6 +228,41 @@ def build_parser() -> argparse.ArgumentParser:
         help="Generate and save locally, do not submit",
     )
     sr.set_defaults(func=cmd_run)
+
+    # ---- reflex (Reflexion track v0.6+) ----
+    rx = sub.add_parser(
+        "reflex",
+        help="Reflexion track: generate v1, get simulator feedback, generate v2, submit",
+    )
+    rx_sub = rx.add_subparsers(dest="reflex_command")
+
+    rxr = rx_sub.add_parser(
+        "run",
+        help="One-shot Reflexion run: v1 -> feedback -> v2 -> submit",
+    )
+    rxr.add_argument("problem_id")
+    rxr.add_argument(
+        "--provider",
+        required=True,
+        choices=["openai", "anthropic", "google", "openrouter", "ollama"],
+        help="Which provider to call (key from env)",
+    )
+    rxr.add_argument("--model", required=True, help="Model id, e.g. claude-sonnet-4-5")
+    rxr.add_argument(
+        "--as",
+        dest="submitter",
+        required=True,
+        help="Submitter name (will appear as community:<name>)",
+    )
+    rxr.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Generate v1+feedback+v2 locally, do not submit",
+    )
+    rxr.set_defaults(func=cmd_reflex_run)
+
+    # If user runs bare `chini-bench reflex` with no sub-subcommand, show help.
+    rx.set_defaults(func=lambda _a: (rx.print_help() or 0))
 
     return p
 

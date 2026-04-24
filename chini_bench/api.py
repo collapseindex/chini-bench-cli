@@ -12,7 +12,7 @@ from typing import Any
 import requests
 
 DEFAULT_BASE_URL = "https://chinilla.com"
-USER_AGENT = "chini-bench-cli/0.5.0 (+https://github.com/collapseindex/chini-bench-cli)"
+USER_AGENT = "chini-bench-cli/0.6.0 (+https://github.com/collapseindex/chini-bench-cli)"
 TIMEOUT_SECONDS = 60
 
 
@@ -52,8 +52,17 @@ def submit(
     canvas: dict[str, Any],
     model: str | None = None,
     harness: str | None = None,
+    v1_canvas: dict[str, Any] | None = None,
+    v1_score: int | None = None,
+    v1_passed: bool | None = None,
+    feedback: dict[str, Any] | None = None,
+    tokens_total: int | None = None,
 ) -> dict[str, Any]:
-    """POST /api/bench/submit - send a CanvasState, get a deterministic score."""
+    """POST /api/bench/submit - send a CanvasState, get a deterministic score.
+
+    Reflexion-track args (v0.6+): when present, the v1 artifacts are stored
+    on the result file under `meta.*` for audit and leaderboard display.
+    """
     payload: dict[str, Any] = {
         "problemId": problem_id,
         "submitter": submitter,
@@ -64,6 +73,16 @@ def submit(
         payload["model"] = model
     if harness:
         payload["harness"] = harness
+    if v1_canvas is not None:
+        payload["v1Canvas"] = v1_canvas
+    if v1_score is not None:
+        payload["v1Score"] = v1_score
+    if v1_passed is not None:
+        payload["v1Passed"] = v1_passed
+    if feedback is not None:
+        payload["feedback"] = feedback
+    if tokens_total is not None:
+        payload["tokensTotal"] = tokens_total
     r = _session().post(
         f"{base_url()}/api/bench/submit",
         json=payload,
@@ -73,6 +92,30 @@ def submit(
     if not r.ok:
         msg = body.get("error") if isinstance(body, dict) else r.text
         raise RuntimeError(f"Submit failed ({r.status_code}): {msg}")
+    return body
+
+
+def get_feedback(problem_id: str, canvas: dict[str, Any]) -> dict[str, Any]:
+    """POST /api/bench/feedback - get a redacted FeedbackPacket for a v1 canvas.
+
+    Used by the Reflexion track between v1 generation and v2 generation. The
+    packet contains no scores or thresholds, only failing-scenario metrics
+    and structural-check results.
+    """
+    payload = {
+        "problemId": problem_id,
+        "canvas": canvas,
+        "website": "",
+    }
+    r = _session().post(
+        f"{base_url()}/api/bench/feedback",
+        json=payload,
+        timeout=TIMEOUT_SECONDS,
+    )
+    body = _safe_json(r)
+    if not r.ok:
+        msg = body.get("error") if isinstance(body, dict) else r.text
+        raise RuntimeError(f"Feedback failed ({r.status_code}): {msg}")
     return body
 
 

@@ -14,3 +14,6 @@ data/
 .idea/
 *.swp
 .DS_Store
+
+reflex_sweep_log.txt
+data/runs/

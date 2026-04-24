@@ -90,3 +90,47 @@ def system_prompt_hash() -> str:
     on every machine.
     """
     return hashlib.sha256(SYSTEM_PROMPT.encode("utf-8")).hexdigest()[:12]
+
+
+# ---------------------------------------------------------------------------
+# Reflexion track (v0.6+)
+# ---------------------------------------------------------------------------
+
+REVISION_BLOCK = (
+    "\n\n## REVISION MODE\n"
+    "You may receive a second user message containing a FeedbackPacket from a "
+    "deterministic simulator. When you do, return ONLY a revised CanvasState "
+    "that addresses the failing scenarios and structural checks. The packet "
+    "contains:\n"
+    "- failing scenarios with observed-vs-target metrics\n"
+    "- failing structural checks with missing components or behaviors\n"
+    "- a controlled list of observation phrases\n"
+    "You will not see your composite score. Trust the packet; do not request "
+    "more information. Return JSON only."
+)
+
+REFLEX_SYSTEM_PROMPT = SYSTEM_PROMPT + REVISION_BLOCK
+
+
+def build_revision_prompt(feedback_packet: dict[str, Any]) -> str:
+    """Render the message-3 user prompt that delivers the FeedbackPacket."""
+    import json as _json
+
+    return (
+        "Your previous CanvasState produced this FeedbackPacket from the "
+        "simulator:\n\n"
+        + _json.dumps(feedback_packet, indent=2)
+        + "\n\nRevise the CanvasState to fix every failing scenario and "
+        "structural check. Return the full revised CanvasState JSON only."
+    )
+
+
+def system_prompt_hash_reflex() -> str:
+    """First 12 hex chars of sha256(REFLEX_SYSTEM_PROMPT).
+
+    Sent with every `reflex run` submission as
+    `harness=chini-bench-reflex:<hash>`. Distinct from the single-shot hash
+    so the server can split runs into the two leaderboards without
+    inspecting the canvas.
+    """
+    return hashlib.sha256(REFLEX_SYSTEM_PROMPT.encode("utf-8")).hexdigest()[:12]
