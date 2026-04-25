@@ -4,6 +4,12 @@
 **Last Updated:** April 24, 2026
 **Author:** Alex Kwon ([chinilla.com](https://chinilla.com))
 
+[![CHINI-bench](https://chinilla.com/share/wfmi4h827jzf/og.png)](https://chinilla.com/share/wfmi4h827jzf)
+
+> **Frontier LLMs solve only a third of CHINI-bench. Giving them a second shot makes them worse.**
+>
+> Four flagships, 30 problems, 120 single-shot runs: combined coverage is 10/30. Same three problems break every model. Add one round of simulator feedback (the agentic track) and the average score *drops*: Claude Sonnet 4.6 -9, GPT-5.4 -4, Grok 4.20 +3. 1 of 91 v2 attempts passed. Models fix the structural checks the feedback flags (74-90% repair rate) but break constraint subscores by adding components instead of restructuring.
+
 A standalone command-line tool for the [CHINI-bench](https://chinilla.com/bench) public AI system-design benchmark.
 
 Models emit a Chinilla architecture as JSON. The simulator runs it through stress
@@ -15,7 +21,7 @@ any copy-paste.
 
 ## What you are scoring against
 
-22 problems across 5 classes. The simulator is domain-blind: same primitives,
+30 problems across 5 classes. The simulator is domain-blind: same primitives,
 same math, very different domains. A model that crushes one class but tanks the
 others is recalling, not designing.
 
@@ -82,6 +88,69 @@ chini-bench submit chini-002-checkout --file canvas.json --as alex \
   --model gpt-4o-mini
 ```
 
+Multi-turn (agentic) track. Generates v1, fetches simulator feedback, generates
+v2 conditioned on the feedback, submits v2 with v1 attached:
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+chini-bench reflex run chini-001-url-shortener \
+  --provider anthropic --model claude-sonnet-4.6 \
+  --as alex
+```
+
+## Examples
+
+Sweep one model across the whole bench (single-shot). The CLI is a single
+problem at a time, so use a shell loop with explicit ids:
+
+```bash
+export OPENROUTER_API_KEY=sk-or-v1-...
+for n in $(seq -f "%03g" 1 30); do
+  pid=$(chini-bench list | awk -v n="chini-$n-" '$0 ~ n {print $1; exit}')
+  [ -n "$pid" ] && chini-bench run "$pid" \
+    --provider openrouter --model x-ai/grok-4.20 --as alex
+done
+```
+
+Run the multi-turn (agentic) track on every problem for one model. The
+`reflex_sweep.py` script in `scripts/` does this in a single command:
+
+```bash
+python scripts/reflex_sweep.py \
+  --model openai/gpt-5.4 \
+  --as alex
+```
+
+Run a local model with no API key (Ollama):
+
+```bash
+ollama pull qwen2.5-coder:14b
+chini-bench run chini-003-twitter-timeline \
+  --provider ollama --model qwen2.5-coder:14b \
+  --as you
+```
+
+Hand-paste workflow with a model behind a UI you trust:
+
+```bash
+chini-bench prompt chini-005-payment-webhook | pbcopy
+# paste into your model UI, save the JSON it returns as canvas.json
+chini-bench submit chini-005-payment-webhook \
+  --file canvas.json --as you --model claude-sonnet-4.6
+```
+
+Verify your CLI's harness hash matches the canonical default (so your runs
+show as `default` and not `custom` on the leaderboard):
+
+```bash
+python -c "from chini_bench.prompt import system_prompt_hash, system_prompt_hash_reflex; \
+  print('single-shot:', system_prompt_hash()); \
+  print('reflex:    ', system_prompt_hash_reflex())"
+# Expected:
+# single-shot: chini-bench-cli:06d0ffb42f19
+# reflex:     chini-bench-reflex:42769353289d
+```
+
 ## Commands
 
 | Command | What it does |
@@ -127,6 +196,8 @@ pip install "chini-bench[all]"          # everything except ollama (ollama needs
 - **Submissions show as `community:<your-name>`** on the public leaderboard.
 
 ## Security
+
+Full security policy and reproduction steps in [SECURITY.md](SECURITY.md).
 
 The CLI is intentionally minimal. The full attack surface is: read env vars, call one model provider over HTTPS, POST a JSON canvas to the bench server.
 
