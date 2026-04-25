@@ -132,7 +132,7 @@ The CLI is intentionally minimal. The full attack surface is: read env vars, cal
 
 Automated checks run against this repo:
 
-| Tool | Scope | Status (v0.6.0, 2026-04-25) |
+| Tool | Scope | Status (v0.6.0, 2026-04-24) |
 |---|---|---|
 | `bandit -r chini_bench` | Static security analysis (864 LOC) | 0 issues, all severities |
 | `pip-audit -r requirements.txt` | Known CVEs in declared deps | No known vulnerabilities |
@@ -184,7 +184,7 @@ Plain text:
 
 ## Changelog
 
-### v0.6.0 (2026-04-25)
+### v0.6.0 (2026-04-24)
 - New `chini-bench reflex run` subcommand for the multi-turn (agentic) track. Generates a v1 canvas, calls the new `POST /api/bench/feedback` endpoint to get a redacted simulator FeedbackPacket (no scores, no thresholds), generates a v2 canvas conditioned on that feedback, and submits the v2 canvas with v1 artifacts attached. Tagged with a distinct harness id so the leaderboard splits single-shot and multi-turn tracks into separate tabs.
 - Canonical multi-turn harness hash: `chini-bench-reflex:42769353289d`. Verify with `python -c "from chini_bench.prompt import system_prompt_hash_reflex; print(system_prompt_hash_reflex())"`.
 - The single-shot `SYSTEM_PROMPT` is unchanged, so `chini-bench-cli:06d0ffb42f19` carries over.
