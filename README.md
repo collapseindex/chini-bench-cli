@@ -1,6 +1,6 @@
 # CHINI-bench CLI
 
-**Version:** 0.6.0
+**Version:** 0.6.1
 **Last Updated:** April 24, 2026
 **Author:** Alex Kwon ([chinilla.com](https://chinilla.com))
 
@@ -254,6 +254,10 @@ Plain text:
 > Kwon, A. (2026). *CHINI-bench CLI: A standalone runner for the CHINI-bench AI system-design benchmark* (Version 0.6.0). ALEX KWON / CHINILLA.COM. https://chinilla.com/bench
 
 ## Changelog
+
+### v0.6.1 (2026-04-25)
+- Auto-retry submit/feedback POSTs once on HTTP 429. Parses the `Retry-After` header or the inline "Try again in Ns" hint from the server's error body, sleeps that long (capped at 120s), then retries. Prevents cascading failures during full-bench sweeps without requiring `--sleep` tuning.
+- No prompt or scoring changes. Canonical harness hashes carry over: `chini-bench-cli:06d0ffb42f19` (single-shot) and `chini-bench-reflex:42769353289d` (Reflexion).
 
 ### v0.6.0 (2026-04-24)
 - New `chini-bench reflex run` subcommand for the multi-turn (agentic) track. Generates a v1 canvas, calls the new `POST /api/bench/feedback` endpoint to get a redacted simulator FeedbackPacket (no scores, no thresholds), generates a v2 canvas conditioned on that feedback, and submits the v2 canvas with v1 artifacts attached. Tagged with a distinct harness id so the leaderboard splits single-shot and multi-turn tracks into separate tabs.

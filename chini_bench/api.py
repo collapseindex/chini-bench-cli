@@ -14,7 +14,7 @@ from typing import Any
 import requests
 
 DEFAULT_BASE_URL = "https://chinilla.com"
-USER_AGENT = "chini-bench-cli/0.6.0 (+https://github.com/collapseindex/chini-bench-cli)"
+USER_AGENT = "chini-bench-cli/0.6.1 (+https://github.com/collapseindex/chini-bench-cli)"
 TIMEOUT_SECONDS = 60
 # Auto-retry once on 429. The server tells us how long to wait via either the
 # standard Retry-After header or an inline "Try again in Ns." message. Capped
