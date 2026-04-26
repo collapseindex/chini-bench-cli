@@ -7,6 +7,8 @@ typed helpers below so the rest of the code stays unaware of HTTP details.
 from __future__ import annotations
 
 import os
+import re
+import time
 from typing import Any
 
 import requests
@@ -14,6 +16,36 @@ import requests
 DEFAULT_BASE_URL = "https://chinilla.com"
 USER_AGENT = "chini-bench-cli/0.6.0 (+https://github.com/collapseindex/chini-bench-cli)"
 TIMEOUT_SECONDS = 60
+# Auto-retry once on 429. The server tells us how long to wait via either the
+# standard Retry-After header or an inline "Try again in Ns." message. Capped
+# so a misbehaving server can't hang the CLI for hours.
+MAX_RETRY_SLEEP_SECONDS = 120
+_RETRY_HINT_RE = re.compile(r"try again in (\d+)\s*s", re.IGNORECASE)
+
+
+def _retry_after_seconds(r: requests.Response, body: Any) -> int:
+    header = r.headers.get("Retry-After")
+    if header and header.isdigit():
+        return min(int(header), MAX_RETRY_SLEEP_SECONDS)
+    if isinstance(body, dict):
+        msg = str(body.get("error") or "")
+        m = _RETRY_HINT_RE.search(msg)
+        if m:
+            return min(int(m.group(1)), MAX_RETRY_SLEEP_SECONDS)
+    return 5  # conservative default
+
+
+def _post_with_retry(
+    session: requests.Session, url: str, payload: dict[str, Any]
+) -> tuple[requests.Response, Any]:
+    r = session.post(url, json=payload, timeout=TIMEOUT_SECONDS)
+    body = _safe_json(r)
+    if r.status_code == 429:
+        wait = _retry_after_seconds(r, body)
+        time.sleep(wait + 1)  # +1 to land just after the window resets
+        r = session.post(url, json=payload, timeout=TIMEOUT_SECONDS)
+        body = _safe_json(r)
+    return r, body
 
 
 def base_url() -> str:
@@ -83,12 +115,7 @@ def submit(
         payload["feedback"] = feedback
     if tokens_total is not None:
         payload["tokensTotal"] = tokens_total
-    r = _session().post(
-        f"{base_url()}/api/bench/submit",
-        json=payload,
-        timeout=TIMEOUT_SECONDS,
-    )
-    body = _safe_json(r)
+    r, body = _post_with_retry(_session(), f"{base_url()}/api/bench/submit", payload)
     if not r.ok:
         msg = body.get("error") if isinstance(body, dict) else r.text
         raise RuntimeError(f"Submit failed ({r.status_code}): {msg}")
@@ -107,12 +134,7 @@ def get_feedback(problem_id: str, canvas: dict[str, Any]) -> dict[str, Any]:
         "canvas": canvas,
         "website": "",
     }
-    r = _session().post(
-        f"{base_url()}/api/bench/feedback",
-        json=payload,
-        timeout=TIMEOUT_SECONDS,
-    )
-    body = _safe_json(r)
+    r, body = _post_with_retry(_session(), f"{base_url()}/api/bench/feedback", payload)
     if not r.ok:
         msg = body.get("error") if isinstance(body, dict) else r.text
         raise RuntimeError(f"Feedback failed ({r.status_code}): {msg}")
