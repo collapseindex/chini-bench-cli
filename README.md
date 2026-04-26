@@ -6,9 +6,9 @@
 
 [![CHINI-bench](https://chinilla.com/share/wfmi4h827jzf/og.png)](https://chinilla.com/share/wfmi4h827jzf)
 
-> **Frontier LLMs solve only a third of CHINI-bench. Giving them a second shot makes them worse.**
+> **Frontier LLMs solve only a third of CHINI-bench. Giving them a second shot exposes two opposite failure modes.**
 >
-> Four flagships, 30 problems, 120 single-shot runs: combined coverage is 10/30. Same three problems break every model. Add one round of simulator feedback (the agentic track) and the average score *drops*: Claude Sonnet 4.6 -9, GPT-5.4 -4, Grok 4.20 +3. 1 of 91 v2 attempts passed. Models fix the structural checks the feedback flags (74-90% repair rate) but break constraint subscores by adding components instead of restructuring.
+> Four flagships, 30 problems, 120 single-shot runs: combined coverage is 10/30. Same three problems break every model. Add one round of simulator feedback (the Reflexion track) and **three of four models get worse**: Claude Sonnet 4.6 -9, GPT-5.4 -4, Grok 4.20 +3. The fourth, **Gemini 3.1 Pro, holds steady at avg 73 and lands 2/30 v2 passes** (the highest of any frontier model on the Reflexion track) but plateaus on problems that need restructuring. Two failure modes: Claude and GPT *overshoot* (restructure, add a component, break the constraint score); Gemini *undershoots* (patches the flagged check, leaves required behaviors missing). Total Reflexion v2 passes across all four models: 3/120.
 
 A standalone command-line tool for the [CHINI-bench](https://chinilla.com/bench) public AI system-design benchmark.
 
